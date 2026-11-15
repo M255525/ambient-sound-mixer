@@ -1,6 +1,6 @@
 # ambient-sound-mixer — 環境音混音桌
 
-靜態網頁（`index.html`＋`engine.js`＋`synth.js`＋`manual.html`＋PWA 檔），無建置步驟、無外部 JS 函式庫（只用 Google Fonts：Noto Sans TC、IBM Plex Mono）。port 8883。2026-11-15 建立：使用者從我先前列的「聲音相關發想」選了這個（原本歸在行銷／創作，實作時改放 `小工具/`，因為主要用途是讀書、助眠、工作背景音，匯出循環 WAV 給創作者是附加功能）。功能細節都是我自定。2026-11-15 上線：公開 repo <https://github.com/M255525/ambient-sound-mixer>（使用者自己 `gh repo create`），GitHub Pages（Actions workflow，push 到 master 自動部署）<https://m255525.github.io/ambient-sound-mixer/>。visitor-badge `m255525.ambientsoundmixer`。匯出速度依軌而異：雨天咖啡廳 30 秒約 7 秒、夜晚營火（蟲鳴節點多）約 18 秒。
+靜態網頁（`index.html`＋`engine.js`＋`synth.js`＋`manual.html`＋PWA 檔），無建置步驟、無外部 JS 函式庫（只用 Google Fonts：Noto Sans TC、IBM Plex Mono）。port 8883。2026-11-15 建立：使用者從我先前列的「聲音相關發想」選了這個（原本歸在行銷／創作，實作時改放 `小工具/`，因為主要用途是讀書、助眠、工作背景音，匯出循環 WAV 給創作者是附加功能）。功能細節都是我自定。2026-11-15 上線：公開 repo <https://github.com/M255525/ambient-sound-mixer>（使用者自己 `gh repo create`），GitHub Pages（Actions workflow，push 到 master 自動部署）<https://m255525.github.io/ambient-sound-mixer/>。visitor-badge `m255525.ambientsoundmixer`。2026-11-15 已放進創作者小鎮的聲音廣場（接力線 c23）。匯出速度依軌而異：雨天咖啡廳 30 秒約 7 秒、夜晚營火（蟲鳴節點多）約 18 秒。
 
 視覺：類比混音台（深炭灰機身、米白膠帶標籤、琥珀 LED、垂直推桿、旋轉旋鈕、指針 VU 表），刻意與 sonic-logo-studio（米白紙）、voice-control-game（深藍遊戲）不同。
 
