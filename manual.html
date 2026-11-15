@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>環境音混音桌 操作手冊</title>
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<style>
+  :root { --bg: #161513; --card: #26241f; --ink: #e9e4d8; --dim: #a39d90; --amber: #ffb43a; --tape: #ece2c8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif; line-height: 1.85; }
+  main { max-width: 820px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: clamp(24px, 5.5vw, 34px); margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 28px 0 8px; display: inline-block; background: var(--tape); color: #2a251c; padding: 0 10px; transform: rotate(-1deg); }
+  h3 { color: var(--amber); font-size: 16px; margin: 14px 0 4px; }
+  section { background: var(--card); border: 1px solid #45423c; border-radius: 12px; padding: 4px 18px 12px; }
+  .muted { color: var(--dim); font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { border-bottom: 1px solid #45423c; padding: 7px 6px; text-align: left; vertical-align: top; }
+  th { color: var(--amber); }
+  .table-wrap { overflow-x: auto; }
+  a { color: var(--amber); }
+  .warn { border-color: rgba(255,91,73,.6); background: rgba(255,91,73,.08); }
+</style>
+</head>
+<body>
+<main>
+  <h1>🎚️ 環境音混音桌 操作手冊</h1>
+  <p class="muted">13 軌現場合成的環境音，自己混出讀書、助眠、工作背景音，也能匯出影片用的無縫循環音檔。<a href="index.html">← 回到混音桌</a></p>
+
+  <h2>⚠ 使用警語</h2>
+  <section class="warn">
+    <ul>
+      <li>本工具僅供個人專注、放鬆與教學示範使用，工具本身禁止未經授權公開發布、販售或商業化使用。</li>
+      <li>所有聲音都是程式即時合成的<b>模擬</b>環境音，不使用任何錄音素材，也不會錄你的聲音、不上傳任何資料。</li>
+      <li>請以<b>小音量</b>聆聽，第一次播放前先把裝置音量調低；長時間戴耳機尤其要注意，避免傷害聽力（可在 ⚙ 設定主音量上限）。</li>
+      <li>本工具<b>不是</b>醫療或治療工具，無法治療失眠、耳鳴、注意力不足等問題，有相關困擾請諮詢醫師。</li>
+      <li>開車、騎車或需要注意周遭聲音（例如照顧嬰幼兒）時請勿使用。</li>
+      <li>手機鎖定螢幕或切到背景時，有些瀏覽器（特別是 iPhone）會暫停聲音，這是系統限制。</li>
+    </ul>
+  </section>
+
+  <h2>快速開始</h2>
+  <section>
+    <ol>
+      <li>點上方任一個<b>情境</b>（讀書專注、雨天咖啡廳、夜晚營火、海邊午後、森林溪谷、好眠、雷雨夜、深夜寫程式），會自動開始播放。</li>
+      <li>想自己混：在混音台按某一軌的「關／開」，或直接把推桿往上推。</li>
+      <li>按 ▶／⏸ 或鍵盤空白鍵播放、暫停。</li>
+    </ol>
+  </section>
+
+  <h2>13 軌音源</h2>
+  <section>
+    <div class="table-wrap"><table>
+      <tr><th>音軌</th><th>特性旋鈕</th><th>適合</th></tr>
+      <tr><td>🌧️ 雨聲</td><td>毛毛雨 ↔ 大雨</td><td>專注、助眠（最萬用）</td></tr>
+      <tr><td>⛈️ 雷聲</td><td>偶爾 ↔ 頻繁（遠近隨機）</td><td>搭配大雨營造雷雨夜</td></tr>
+      <tr><td>🌊 海浪</td><td>平靜 ↔ 洶湧（浪的間隔與亮度）</td><td>放鬆、冥想</td></tr>
+      <tr><td>💨 風聲</td><td>微風 ↔ 強風（陣風）</td><td>當作空間感的底</td></tr>
+      <tr><td>🔥 營火</td><td>悶燒 ↔ 旺火（劈啪密度）</td><td>冬天、溫暖感</td></tr>
+      <tr><td>🏞️ 溪流</td><td>涓涓 ↔ 湍急</td><td>森林、專注</td></tr>
+      <tr><td>🐦 鳥鳴</td><td>零星 ↔ 熱鬧（四種叫聲）</td><td>早晨、戶外感</td></tr>
+      <tr><td>🦗 蟲鳴</td><td>一兩隻 ↔ 滿山</td><td>夏夜</td></tr>
+      <tr><td>☕ 咖啡廳</td><td>冷清 ↔ 客滿（聽不清內容的人聲＋杯盤聲）</td><td>不想太安靜的工作</td></tr>
+      <tr><td>⌨️ 打字聲</td><td>慢慢想 ↔ 飛快</td><td>寫作、寫程式陪伴感</td></tr>
+      <tr><td>🕰️ 時鐘</td><td>木頭 ↔ 金屬</td><td>讀書、穩定節奏</td></tr>
+      <tr><td>📻 噪音</td><td>白 ↔ 粉紅 ↔ 棕</td><td>遮蔽環境雜音；棕色最低沉</td></tr>
+      <tr><td>🎹 柔和和弦</td><td>暗 ↔ 亮</td><td>讓整體更溫柔，不會太「白噪音」</td></tr>
+    </table></div>
+    <p class="muted">每一滴雨、每一聲鳥叫都是播放時才隨機產生，所以不會有固定的循環；「自然變化」開著時，各軌音量還會慢慢起伏，更像真實環境。</p>
+  </section>
+
+  <h2>混音台操作</h2>
+  <section>
+    <ul>
+      <li><b>開／關</b>：開啟後 LED 會亮；直接推推桿也會自動打開那一軌。</li>
+      <li><b>大旋鈕</b>：這一軌的特性（雨勢、浪況…）。<b>小旋鈕</b>：左右聲道。旋鈕用滑鼠或手指<b>上下拖曳</b>、滑鼠滾輪或方向鍵調整，<b>雙擊</b>回到預設。</li>
+      <li><b>M（靜音）</b>：暫時聽不到這軌；<b>S（獨奏）</b>：只聽有按 S 的軌，方便單獨調整。</li>
+      <li><b>推桿</b>：這一軌的音量，旁邊的燈是即時電平。</li>
+      <li><b>主輸出</b>：VU 表、溫暖度（越左越悶、越右越清亮）、主音量、自然變化、全部關閉。下方是整體頻譜。</li>
+    </ul>
+  </section>
+
+  <h2>睡眠定時與番茄鐘</h2>
+  <section>
+    <ul>
+      <li><b>😴 睡眠定時</b>：15 分鐘～2 小時，結束前會慢慢淡出（淡出長度可在 ⚙ 設定），然後自動停止。</li>
+      <li><b>🍅 番茄鐘</b>：預設專注 25 分、休息 5 分、每 4 輪長休息 15 分，換階段時響兩聲柔和的鐘聲；休息時環境音會自動調小（可關）。時間長度在 ⚙ 設定改。</li>
+    </ul>
+  </section>
+
+  <h2>我的混音、分享、匯出</h2>
+  <section>
+    <ul>
+      <li><b>💾 我的混音</b>：取名後按儲存，之後一鍵載入（只存在這台裝置的瀏覽器）。</li>
+      <li><b>🔗 分享連結</b>：混音設定編在網址裡，朋友打開就是同一組混音，不經過任何伺服器。</li>
+      <li><b>🎬 匯出無縫循環 WAV</b>：30 秒～5 分鐘，頭尾交叉淡化，放進影片剪輯、直播或 Podcast 可以一直重複不會斷。匯出時會先暫停播放（同時播放會讓合成變慢很多），完成後自動接著播。5 分鐘立體聲約 50 MB。</li>
+    </ul>
+  </section>
+
+  <h2>常用設定（⚙）</h2>
+  <section>
+    <ul>
+      <li>播放：開啟時載入上次的混音、主音量上限（保護聽力）、睡眠定時淡出長度。</li>
+      <li>番茄鐘：專注／休息／長休息時間、休息時調小音量。</li>
+      <li>匯出：取樣率（44.1／48 kHz）、頭尾交叉淡化長度、音量正規化。</li>
+      <li>資料：清除我的混音。</li>
+    </ul>
+  </section>
+
+  <h2 id="creator-h">👤 創作者</h2>
+  <section id="creator">
+<div class="mk-creator">
+<style>.mk-creator{line-height:1.75}.mk-creator h3{margin:14px 0 6px;font-size:1.05em}.mk-creator table{width:100%;border-collapse:collapse;font-size:.95em}.mk-creator td,.mk-creator th{text-align:left;padding:5px 6px;border-bottom:1px solid rgba(128,128,128,.3);vertical-align:top}.mk-creator th{white-space:nowrap}.mk-creator ul{margin:4px 0;padding-left:1.4em}.mk-creator .mk-tags{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0}.mk-creator .mk-tags span{border:1px solid rgba(128,128,128,.45);border-radius:999px;padding:1px 10px;font-size:.9em}</style>
+<p><b>Mark Tsai（蔡豐全）</b>為深耕創業輔導與數位轉型領域的顧問與講師，長期擔任勞動力發展署創業顧問與多項政府計畫的顧問、業師與評審委員，協助中小企業導入數據分析與 AI 工具、申請政府補助計畫，並具備跨境電商實務與講師培訓的豐富經驗。本工具是其推廣 AI 工具運用於教學與課程情境的作品之一。</p>
+<p>聯絡信箱：<a href="mailto:tsaimark@gmail.com">tsaimark@gmail.com</a></p>
+<h3>專長</h3>
+<div class="mk-tags"><span>銷售數據分析</span><span>AI 工具運用</span><span>政府補助計畫申請</span><span>創業</span><span>跨境電商</span></div>
+<h3>證照</h3>
+<table>
+<thead><tr><th>年度</th><th>證照</th></tr></thead>
+<tbody>
+<tr><td>2013</td><td>青創總會 創業輔導顧問師班</td></tr>
+<tr><td>2014</td><td>青創總會 網路行銷講師培訓班</td></tr>
+<tr><td>2016</td><td>阿里巴巴 P4P 認證講師</td></tr>
+<tr><td>2017</td><td>iCap 訓練規劃與評量職能基準課程</td></tr>
+<tr><td>2023</td><td>iCap 職能導向課程申請認證實作班</td></tr>
+<tr><td>2025</td><td>iPAS AI 應用規劃師－初級</td></tr>
+<tr><td>2025</td><td>新北市社會局 社區數位陪伴員</td></tr>
+</tbody>
+</table>
+<h3>經歷</h3>
+<ul>
+<li>勞動力發展署桃竹苗分署 創業顧問（2017－迄今）</li>
+<li>勞動力發展署（北北基）小型企業人力提升計畫 顧問（2019－迄今）</li>
+<li>勞動力發展署（桃竹苗）小型企業人力提升計畫 顧問（2019－迄今）</li>
+<li>農業部農業科技司「科技農企業雙軸轉型躍升發展」科技計畫 業師（2025－2026）</li>
+<li>勞動力發展署 企業人力資源提升計畫 審查委員（2024）</li>
+<li>勞動力發展署 職前訓練評鑑計畫 委員（2022）</li>
+<li>勞動部桃竹苗分署 桃竹苗區域運籌人力資源整合服務計畫 顧問（2022－2023）</li>
+<li>經濟部中小企業處 SBIR 海選專案 評審委員（2019－2024）</li>
+<li>勞動力發展署 數位學習課程清單審查會議 審查委員（2024－2025）</li>
+<li>輔仁大學創新跨領域學院 課務委員（2024－2025）</li>
+<li>台北市進出口商業同業公會 跨境電商生態村 顧問</li>
+<li>台灣網商協會 顧問</li>
+<li>中華職能開發策進會 顧問（2018－2020）</li>
+<li>新北市汽車美容人員職業工會 顧問（2023－迄今）</li>
+<li>中華網路行銷講師協會 顧問（2022－迄今）</li>
+<li>新北市社企電商基地 輔導顧問（2018－2020）</li>
+<li>阿里巴巴國際站平台 認證講師（2016）</li>
+<li>巨匠電腦 跨境電子商務班 講師（2016－2017）</li>
+</ul>
+</div>
+  </section>
+</main>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>環境音混音桌</title>
+<meta name="description" content="13 軌程式合成的環境音（雨、雷、海浪、風、營火、溪流、鳥、蟲、咖啡廳、打字、時鐘、噪音、和弦），自己混出讀書、助眠、工作背景音，可定時、番茄鐘、匯出無縫循環 WAV">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b1a18">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #161513; --body: #24221f; --body2: #2d2b27; --strip: #312f2b; --edge: #45423c; --tape: #ece2c8; --tapeInk: #2a251c;
+    --ink: #e9e4d8; --dim: #a39d90; --amber: #ffb43a; --green: #79d68a; --red: #ff5b49; --blue: #6fb7ff;
+    --mono: "IBM Plex Mono", Consolas, monospace; --sans: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: radial-gradient(120% 80% at 50% 0%, #2a2724 0%, var(--bg) 70%) fixed, var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
+  #marqueeBar { position: fixed; top: 0; left: 0; right: 0; height: 26px; z-index: 50; background: #000; overflow: hidden; display: none; align-items: center; }
+  #marqueeBar.on { display: flex; }
+  #marqueeTrack { display: inline-block; white-space: nowrap; padding-left: 100%; font-size: 12px; font-weight: 700; color: var(--amber); animation: marquee-scroll 30s linear infinite; }
+  #marqueeBar:hover #marqueeTrack { animation-play-state: paused; }
+  @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  body.has-marquee { padding-top: 26px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 16px 16px 60px; }
+
+  header.top { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .logo { display: flex; gap: 12px; align-items: center; }
+  .logo .ic { width: 48px; height: 48px; border-radius: 10px; background: linear-gradient(#3a3733, #24221f); border: 1px solid var(--edge); display: grid; place-items: center; box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+  h1 { margin: 0; font-size: clamp(22px, 4.6vw, 30px); font-weight: 900; letter-spacing: 2px; }
+  .sub { margin: 0; font-size: 13px; color: var(--dim); }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+  button, .btn { font-family: inherit; font-size: 14px; cursor: pointer; border: 1px solid var(--edge); background: linear-gradient(#3b3934, #2c2a26); color: var(--ink); padding: 6px 12px; border-radius: 7px; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,.07), 0 1px 2px rgba(0,0,0,.4); }
+  button:hover, .btn:hover { border-color: #6a655b; }
+  button:active { transform: translateY(1px); }
+  button:focus-visible, input:focus-visible, select:focus-visible, .knob:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+  button.big { font-size: 18px; padding: 10px 22px; }
+  button.amber { background: linear-gradient(#ffc45c, #f0a020); color: #2a1d05; border-color: #c98a17; }
+  button.on { border-color: var(--amber); color: var(--amber); }
+  select, input[type=text] { font-family: inherit; font-size: 14px; background: #1c1b18; color: var(--ink); border: 1px solid var(--edge); border-radius: 6px; padding: 5px 8px; }
+
+  /* 控制列 */
+  .transport { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; background: linear-gradient(var(--body2), var(--body)); border: 1px solid var(--edge); border-radius: 12px; padding: 10px 14px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,.35); }
+  .now { flex: 1; min-width: 200px; font-size: 13.5px; color: var(--dim); }
+  .now b { color: var(--ink); }
+  .lcd { font-family: var(--mono); background: #0d140d; color: #9df0a6; border: 1px solid #000; border-radius: 6px; padding: 4px 10px; font-size: 14px; min-width: 120px; text-align: center; box-shadow: inset 0 0 8px rgba(0,0,0,.8); text-shadow: 0 0 6px rgba(157,240,166,.5); }
+  .tgroup { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--dim); }
+
+  .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 14px; }
+  .preset { text-align: left; flex-direction: column; align-items: flex-start; padding: 8px 10px; border-radius: 9px; font-size: 14px; gap: 2px; }
+  .preset small { font-weight: 400; color: var(--dim); font-size: 11.5px; line-height: 1.45; }
+  .preset.cur { border-color: var(--amber); box-shadow: 0 0 0 1px var(--amber) inset; }
+
+  /* 混音台 */
+  .console { background: linear-gradient(180deg, #2f2d29, #23211e); border: 1px solid var(--edge); border-radius: 14px; padding: 12px; box-shadow: 0 14px 36px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05); }
+  .console-inner { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 12px; }
+  @media (max-width: 720px) { .console-inner { grid-template-columns: minmax(0, 1fr); } }
+  .strips { display: grid; grid-template-columns: repeat(auto-fill, minmax(78px, 1fr)); gap: 8px; }
+  .strip { background: linear-gradient(180deg, var(--strip), #292724); border: 1px solid var(--edge); border-radius: 9px; padding: 6px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; transition: opacity .2s; }
+  .strip.off { opacity: .55; }
+  .strip.off:hover { opacity: .85; }
+  .tape { background: var(--tape); color: var(--tapeInk); font-weight: 900; font-size: 12.5px; padding: 1px 4px; border-radius: 2px; width: 100%; text-align: center; transform: rotate(-1deg); box-shadow: 0 1px 2px rgba(0,0,0,.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pw { width: 100%; justify-content: center; font-size: 12px; padding: 4px 2px; gap: 6px; }
+  .led { width: 9px; height: 9px; border-radius: 50%; background: #3a352c; box-shadow: inset 0 1px 1px rgba(0,0,0,.6); flex: none; }
+  .strip.live .pw .led { background: var(--amber); box-shadow: 0 0 8px var(--amber); }
+  .kwrap { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--dim); line-height: 1.25; text-align: center; }
+  .kwrap b { color: var(--ink); font-weight: 500; font-size: 11px; }
+  .knob { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #5d5850, #2a2824 70%); border: 1px solid #12110f; box-shadow: 0 2px 4px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.12); position: relative; cursor: ns-resize; touch-action: none; }
+  .knob::after { content: ''; position: absolute; left: 50%; top: 4px; width: 3px; height: 12px; margin-left: -1.5px; background: var(--tape); border-radius: 2px; transform-origin: 50% 16px; transform: rotate(var(--rot, 0deg)); }
+  .knob.sm { width: 30px; height: 30px; }
+  .knob.sm::after { top: 3px; height: 9px; transform-origin: 50% 12px; }
+  .ms { display: flex; gap: 3px; width: 100%; }
+  .ms button { flex: 1; justify-content: center; padding: 2px 0; font-size: 11px; font-family: var(--mono); border-radius: 4px; }
+  .ms button[data-a="m"].on { color: var(--red); border-color: var(--red); }
+  .ms button[data-a="s"].on { color: var(--blue); border-color: var(--blue); }
+  .fz { display: flex; gap: 6px; align-items: stretch; height: 150px; }
+  .meter { width: 7px; background: #11100e; border-radius: 3px; position: relative; overflow: hidden; border: 1px solid #000; }
+  .meter i { position: absolute; left: 0; right: 0; bottom: 0; height: 0; background: linear-gradient(to top, var(--green) 0%, var(--green) 65%, var(--amber) 82%, var(--red) 100%); background-size: 100% 150px; background-position: bottom; }
+  input.fader { writing-mode: vertical-lr; direction: rtl; width: 26px; height: 100%; margin: 0; appearance: none; -webkit-appearance: none; background: transparent; cursor: pointer; }
+  input.fader::-webkit-slider-runnable-track { width: 6px; background: #0e0d0c; border-radius: 3px; border: 1px solid #000; }
+  input.fader::-moz-range-track { width: 6px; background: #0e0d0c; border-radius: 3px; border: 1px solid #000; }
+  input.fader::-webkit-slider-thumb { -webkit-appearance: none; width: 26px; height: 14px; border-radius: 3px; background: linear-gradient(#e8e2d4, #a9a293 45%, #3c3934 50%, #a9a293 55%, #d7d0c1); border: 1px solid #111; margin-left: -11px; box-shadow: 0 2px 3px rgba(0,0,0,.6); }
+  input.fader::-moz-range-thumb { width: 26px; height: 14px; border-radius: 3px; background: linear-gradient(#e8e2d4, #a9a293 45%, #3c3934 50%, #a9a293 55%, #d7d0c1); border: 1px solid #111; }
+  .val { font-family: var(--mono); font-size: 11px; color: var(--dim); }
+
+  .masterstrip { background: linear-gradient(180deg, #3a3631, #2a2723); border: 1px solid #5a554b; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 8px; align-items: center; }
+  .masterstrip .tape { background: var(--amber); }
+  .vu { width: 100%; height: 86px; background: #efe5c9; border-radius: 6px; border: 2px solid #11100e; display: block; }
+  .mrow { display: flex; gap: 10px; align-items: flex-end; justify-content: center; width: 100%; }
+  .spec { width: 100%; height: 54px; display: block; margin-top: 10px; border-radius: 8px; background: #11100e; border: 1px solid #000; }
+  .check { display: flex; gap: 6px; align-items: center; font-size: 12.5px; cursor: pointer; color: var(--dim); }
+  .check input { accent-color: var(--amber); width: 16px; height: 16px; }
+
+  .panel { background: linear-gradient(var(--body2), var(--body)); border: 1px solid var(--edge); border-radius: 12px; padding: 12px 14px; margin-top: 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; font-weight: 900; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .panel h2 small { font-weight: 400; color: var(--dim); font-size: 12.5px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .note { font-size: 12.5px; color: var(--dim); }
+  .mine { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+  .mi { background: #1d1c19; border: 1px solid var(--edge); border-radius: 8px; padding: 6px 8px; font-size: 13px; }
+  .mi b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mi .d { color: var(--dim); font-size: 11.5px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .mi .row button { padding: 2px 8px; font-size: 12px; }
+  .warnbox { font-size: 12.5px; line-height: 1.75; background: rgba(255,91,73,.08); border: 1px solid rgba(255,91,73,.45); border-radius: 10px; padding: 10px 12px; margin-top: 16px; color: #ddd3c2; }
+  footer { margin-top: 16px; font-size: 12.5px; color: var(--dim); text-align: center; }
+  footer a { color: inherit; }
+
+  .modal { position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal.hidden { display: none; }
+  .modal .box { background: #262420; border: 1px solid #5a554b; border-radius: 12px; max-width: 560px; width: 100%; max-height: 88vh; overflow-y: auto; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 20px 50px rgba(0,0,0,.6); }
+  .modal h3 { margin: 0; font-size: 19px; }
+  details.set-sec { border: 1px solid var(--edge); border-radius: 9px; background: #1e1d1a; }
+  details.set-sec > summary { list-style: none; cursor: pointer; padding: 8px 12px; font-weight: 900; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+  details.set-sec > summary::-webkit-details-marker { display: none; }
+  details.set-sec > summary::before { content: '▸'; margin-right: 6px; color: var(--amber); transition: transform .15s; }
+  details.set-sec[open] > summary::before { transform: rotate(90deg); }
+  details.set-sec > summary .t { flex: 1; }
+  details.set-sec > summary .v { font-weight: 400; font-size: 12px; color: var(--dim); text-align: right; }
+  .set-body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+  .set-body label.r { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .set-tools { display: flex; gap: 6px; justify-content: flex-end; }
+  .set-tools button { font-size: 12px; padding: 2px 8px; }
+  @media (max-width: 480px) {
+    .console { padding: 8px; }
+    .strips { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
+    .strip { padding: 5px 2px 6px; gap: 4px; }
+    .tape { font-size: 11px; }
+    .knob { width: 34px; height: 34px; } .knob::after { transform-origin: 50% 13px; height: 10px; }
+    .knob.sm { width: 26px; height: 26px; } .knob.sm::after { transform-origin: 50% 10px; height: 8px; }
+    .fz { height: 110px; }
+    .presets { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--tape); color: var(--tapeInk); padding: 8px 16px; border-radius: 8px; font-weight: 700; z-index: 200; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; text-align: center; }
+  .toast.on { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="marqueeBar"><div id="marqueeTrack"></div></div>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">
+      <div class="ic" aria-hidden="true"><svg width="30" height="30" viewBox="0 0 30 30"><rect x="4" y="3" width="3" height="24" rx="1.5" fill="#11100e"/><rect x="13.5" y="3" width="3" height="24" rx="1.5" fill="#11100e"/><rect x="23" y="3" width="3" height="24" rx="1.5" fill="#11100e"/><rect x="1.5" y="15" width="8" height="5" rx="1" fill="#ece2c8"/><rect x="11" y="7" width="8" height="5" rx="1" fill="#ffb43a"/><rect x="20.5" y="19" width="8" height="5" rx="1" fill="#ece2c8"/></svg></div>
+      <div><h1>環境音混音桌</h1><p class="sub">13 軌現場合成的環境音，混出你的讀書、助眠、工作背景音</p></div>
+    </div>
+    <div class="toolbar">
+      <button id="settings-btn" type="button">⚙ 常用設定</button>
+      <a class="btn" href="manual.html" target="_blank" rel="noopener">📖 操作手冊</a>
+      <button id="installBtn" type="button">📲 加入主畫面</button>
+      <button id="warn-btn" type="button">⚠ 使用警語</button>
+    </div>
+  </header>
+
+  <div class="transport">
+    <button class="big amber" id="play" type="button">▶ 播放</button>
+    <div class="now" id="now">選一個情境，或在下面打開幾軌，按播放開始。</div>
+    <div class="tgroup">😴 睡眠定時
+      <select id="sleep" aria-label="睡眠定時"><option value="0">關</option><option value="15">15 分</option><option value="30">30 分</option><option value="45">45 分</option><option value="60">60 分</option><option value="90">90 分</option><option value="120">2 小時</option></select>
+      <span class="lcd" id="sleep-lcd">--:--</span></div>
+    <div class="tgroup"><button type="button" id="pomo">🍅 番茄鐘</button><span class="lcd" id="pomo-lcd">--:--</span></div>
+  </div>
+
+  <div class="presets" id="presets"></div>
+
+  <section class="console" aria-label="混音台">
+    <div class="console-inner">
+      <div class="strips" id="strips"></div>
+      <div class="masterstrip">
+        <div class="tape">主輸出 MASTER</div>
+        <canvas class="vu" id="vu" width="340" height="160" aria-label="音量表"></canvas>
+        <div class="mrow">
+          <div class="kwrap"><div class="knob" id="k-tone" role="slider" tabindex="0" aria-label="溫暖度"></div><b>溫暖度</b><span id="tone-v"></span></div>
+          <div class="fz"><div class="meter"><i id="m-master"></i></div><input class="fader" type="range" id="f-master" min="0" max="1" step="0.01" aria-label="主音量"></div>
+        </div>
+        <div class="val" id="master-v"></div>
+        <label class="check"><input type="checkbox" id="drift"> 自然變化（各軌音量慢慢起伏）</label>
+        <button type="button" id="all-off" style="font-size:12px">全部關閉</button>
+      </div>
+    </div>
+    <canvas class="spec" id="spec" width="1100" height="54" aria-hidden="true"></canvas>
+  </section>
+
+  <div class="grid2">
+    <section class="panel">
+      <h2>💾 我的混音 <small>只存在這台裝置</small></h2>
+      <div class="row"><input type="text" id="mix-name" maxlength="20" placeholder="幫這組混音取個名字" style="flex:1;min-width:150px"><button type="button" id="mix-save">♡ 儲存</button><button type="button" id="share">🔗 複製分享連結</button></div>
+      <div class="mine" id="mine" style="margin-top:10px"></div>
+    </section>
+    <section class="panel">
+      <h2>🎬 匯出無縫循環 WAV <small>影片、直播、Podcast 背景音</small></h2>
+      <p class="note" style="margin:0 0 8px">用目前的混音重新合成一段，頭尾交叉淡化，放進剪輯軟體可以一直重複播放不會斷。合成在你的瀏覽器裡完成。</p>
+      <div class="row"><select id="exp-len"><option value="30">30 秒</option><option value="60" selected>1 分鐘</option><option value="180">3 分鐘</option><option value="300">5 分鐘</option></select>
+        <button type="button" class="amber" id="export">⬇ 匯出 WAV</button><span class="note" id="exp-msg"></span></div>
+    </section>
+  </div>
+
+  <div class="warnbox">
+    ⚠ <b>使用警語</b>：本工具僅供個人專注、放鬆與教學示範使用，工具本身禁止未經授權公開發布、販售或商業化使用。所有聲音都是程式即時合成的「模擬」環境音，不使用任何錄音素材。
+    請以<b>小音量</b>聆聽，長時間戴耳機尤其要注意；本工具<b>不是</b>醫療或治療工具，無法治療失眠、耳鳴、注意力不足等問題，有相關困擾請諮詢醫師。開車或需要注意周遭聲音時請勿使用。
+  </div>
+  <footer>
+    創作者：蔡豐全（Mark Tsai）｜<a href="manual.html#creator" target="_blank" rel="noopener">創作者介紹與聯絡方式</a><br>
+    <img src="https://visitor-badge.laobi.icu/badge?page_id=m255525.ambientsoundmixer" alt="訪客次數" style="vertical-align:middle;height:20px;margin-top:6px;">
+  </footer>
+</div>
+
+<div id="warn-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="warn-h">
+  <div class="box">
+    <h3 id="warn-h">⚠ 使用前請先看</h3>
+    <div style="font-size:14px;line-height:1.8">・本工具僅供個人專注、放鬆與教學示範使用，工具本身禁止未經授權公開發布、販售或商業化使用。<br>
+      ・所有聲音都是程式即時合成的模擬環境音，不使用任何錄音素材，也不會錄你的聲音。<br>
+      ・請以<b>小音量</b>聆聽，第一次播放前先把裝置音量調低；長時間戴耳機尤其要注意，避免傷害聽力。<br>
+      ・本工具<b>不是</b>醫療或治療工具，無法治療失眠、耳鳴、注意力不足等問題，有相關困擾請諮詢醫師。<br>
+      ・開車、騎車或需要注意周遭聲音（例如照顧嬰幼兒）時請勿使用。<br>
+      ・手機鎖定螢幕或切到背景時，有些瀏覽器會暫停聲音，這是系統限制。</div>
+    <div style="font-size:12px;color:var(--dim)">創作者：蔡豐全（Mark Tsai）</div>
+    <button id="warn-ok" class="amber" type="button" style="justify-content:center;font-size:16px">我知道了</button>
+  </div>
+</div>
+
+<div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="set-h">
+  <div class="box">
+    <h3 id="set-h">⚙ 常用設定</h3>
+    <div class="set-tools"><button type="button" id="set-expand">全部展開</button><button type="button" id="set-collapse">全部收合</button></div>
+    <details class="set-sec" data-sec="play"><summary><span class="t">🔊 播放</span><span class="v" id="sv-play"></span></summary>
+      <div class="set-body">
+        <label class="r">開啟時載入上次的混音 <input type="checkbox" id="set-restore"></label>
+        <label class="r">主音量上限（保護聽力） <select id="set-cap"><option value="1">不限制</option><option value="0.8">80%</option><option value="0.6">60%</option><option value="0.4">40%</option></select></label>
+        <label class="r">睡眠定時結束前淡出 <select id="set-fade"><option value="30">30 秒</option><option value="60">1 分鐘</option><option value="180">3 分鐘</option></select></label>
+      </div></details>
+    <details class="set-sec" data-sec="pomo"><summary><span class="t">🍅 番茄鐘</span><span class="v" id="sv-pomo"></span></summary>
+      <div class="set-body">
+        <label class="r">專注時間 <select id="set-work"><option value="25">25 分</option><option value="30">30 分</option><option value="45">45 分</option><option value="50">50 分</option></select></label>
+        <label class="r">休息時間 <select id="set-rest"><option value="5">5 分</option><option value="10">10 分</option><option value="15">15 分</option></select></label>
+        <label class="r">每 4 輪長休息 <select id="set-long"><option value="15">15 分</option><option value="20">20 分</option><option value="30">30 分</option></select></label>
+        <label class="r">休息時把環境音調小 <input type="checkbox" id="set-restdim"></label>
+      </div></details>
+    <details class="set-sec" data-sec="export"><summary><span class="t">🎬 匯出</span><span class="v" id="sv-export"></span></summary>
+      <div class="set-body">
+        <label class="r">取樣率 <select id="set-sr"><option value="44100">44.1 kHz</option><option value="48000">48 kHz（影片）</option></select></label>
+        <label class="r">頭尾交叉淡化長度 <select id="set-xf"><option value="2">2 秒</option><option value="4">4 秒</option><option value="8">8 秒</option></select></label>
+        <label class="r">音量正規化（-1 dBFS） <input type="checkbox" id="set-norm"></label>
+      </div></details>
+    <details class="set-sec" data-sec="data"><summary><span class="t">🗂 資料</span><span class="v" id="sv-data"></span></summary>
+      <div class="set-body"><button id="clear-mine" type="button">清除「我的混音」全部紀錄</button></div></details>
+    <details class="set-sec" data-sec="about"><summary><span class="t">ℹ 關於本工具</span><span class="v">創作者・手冊・警語</span></summary>
+      <div class="set-body">
+        <div>👤 創作者：<b>蔡豐全（Mark Tsai）</b>，創業輔導與數位轉型顧問、講師，推廣 AI 工具運用於教學情境。聯絡方式見操作手冊的創作者介紹。</div>
+        <div class="row">
+          <a class="btn" href="manual.html" target="_blank" rel="noopener">📖 操作手冊</a>
+          <a class="btn" href="manual.html#creator" target="_blank" rel="noopener">👤 創作者完整介紹</a>
+          <button type="button" id="about-warn">⚠ 使用警語</button>
+          <button type="button" id="about-install">📲 加入主畫面</button>
+        </div>
+        <div><img src="https://visitor-badge.laobi.icu/badge?page_id=m255525.ambientsoundmixer" alt="訪客次數" style="height:20px"></div>
+      </div></details>
+    <button id="settings-ok" class="amber" type="button" style="justify-content:center;font-size:16px">儲存並關閉</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import * as E from './engine.js';
+import { Mixer } from './synth.js';
+const $ = id => document.getElementById(id);
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2200); }
+
+/* ---------- 設定 ---------- */
+const SET = Object.assign({ restore: true, cap: 1, fade: 60, work: 25, rest: 5, long: 15, restdim: true, sr: 44100, xf: 4, norm: true }, (() => { try { return JSON.parse(lsGet('asm-settings', '{}')); } catch (e) { return {}; } })());
+const saveSet = () => lsSet('asm-settings', JSON.stringify(SET));
+
+/* ---------- 狀態 ---------- */
+let mix = E.defaultMix(), curPreset = null;
+if (SET.restore) { try { const m = JSON.parse(lsGet('asm-mix', 'null')); if (m) mix = E.cleanMix(m); } catch (e) {} }
+let AC = null, MX = null, timer = null, playing = false, playTok = 0;
+const saveMix = () => { clearTimeout(saveMix._t); saveMix._t = setTimeout(() => lsSet('asm-mix', JSON.stringify(mix)), 300); };
+
+/* ---------- 旋鈕 ---------- */
+function knob(el, get, set, { min = 0, max = 1, def = 0.5, label = () => '' } = {}) {
+  const draw = () => { const v = get(); el.style.setProperty('--rot', (-135 + 270 * (v - min) / (max - min)) + 'deg'); el.setAttribute('aria-valuenow', v.toFixed(2)); el.setAttribute('aria-valuetext', label(v)); };
+  el.setAttribute('aria-valuemin', min); el.setAttribute('aria-valuemax', max);
+  let y0 = 0, v0 = 0, drag = false;
+  el.addEventListener('pointerdown', e => { drag = true; y0 = e.clientY; v0 = get(); el.setPointerCapture(e.pointerId); e.preventDefault(); });
+  el.addEventListener('pointermove', e => { if (!drag) return; set(Math.max(min, Math.min(max, v0 + (y0 - e.clientY) / 160 * (max - min)))); draw(); });
+  el.addEventListener('pointerup', () => { drag = false; });
+  el.addEventListener('pointercancel', () => { drag = false; });
+  el.addEventListener('wheel', e => { e.preventDefault(); set(Math.max(min, Math.min(max, get() - Math.sign(e.deltaY) * (max - min) / 40))); draw(); }, { passive: false });
+  el.addEventListener('keydown', e => {
+    const st = (max - min) / 20;
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { set(Math.min(max, get() + st)); draw(); e.preventDefault(); }
+    if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { set(Math.max(min, get() - st)); draw(); e.preventDefault(); }
+  });
+  el.addEventListener('dblclick', () => { set(def); draw(); });
+  draw();
+  return draw;
+}
+
+/* ---------- 建混音台 ---------- */
+const UI = {};
+$('strips').innerHTML = E.CHANNELS.map(c => `<div class="strip" data-id="${c.id}">
+  <div class="tape" title="${c.name}">${c.icon} ${c.name}</div>
+  <button type="button" class="pw" data-a="on" aria-pressed="false"><span class="led"></span>開</button>
+  <div class="kwrap"><div class="knob" data-k="ch" role="slider" tabindex="0" aria-label="${c.name}${c.knob}"></div><b>${c.knob}</b><span data-v="ch"></span></div>
+  <div class="kwrap"><div class="knob sm" data-k="pan" role="slider" tabindex="0" aria-label="${c.name}左右聲道"></div><span data-v="pan"></span></div>
+  <div class="ms"><button type="button" data-a="m" title="靜音">M</button><button type="button" data-a="s" title="獨奏：只聽這軌">S</button></div>
+  <div class="fz"><div class="meter"><i></i></div><input class="fader" type="range" min="0" max="1" step="0.01" aria-label="${c.name}音量"></div>
+  <div class="val" data-v="lv"></div>
+</div>`).join('');
+E.CHANNELS.forEach(c => {
+  const el = document.querySelector(`.strip[data-id="${c.id}"]`), s = () => mix.ch[c.id];
+  const u = UI[c.id] = { el, meter: el.querySelector('.meter i'), fader: el.querySelector('.fader') };
+  const chLabel = v => v < 0.2 ? c.lo : v > 0.8 ? c.hi : Math.round(v * 100) + '%';
+  u.drawCh = knob(el.querySelector('[data-k="ch"]'), () => s().ch, v => { s().ch = v; el.querySelector('[data-v="ch"]').textContent = chLabel(v); changed(); }, { def: c.def.ch, label: chLabel });
+  const panLabel = v => Math.abs(v) < 0.05 ? '中' : (v < 0 ? '左 ' : '右 ') + Math.round(Math.abs(v) * 100);
+  u.drawPan = knob(el.querySelector('[data-k="pan"]'), () => s().pan, v => { s().pan = v; el.querySelector('[data-v="pan"]').textContent = panLabel(v); changed(); }, { min: -1, max: 1, def: 0, label: panLabel });
+  u.fader.addEventListener('input', () => { s().lv = +u.fader.value; if (!s().on && s().lv > 0) s().on = true; changed(); });
+  el.addEventListener('click', e => {
+    const b = e.target.closest('button[data-a]'); if (!b) return;
+    const a = b.dataset.a;
+    if (a === 'on') s().on = !s().on;
+    if (a === 'm') s().m = !s().m;
+    if (a === 's') s().s = !s().s;
+    changed();
+    if (a === 'on' && s().on && !playing) start();
+  });
+  u.paint = () => {
+    const v = s(), live = E.activeIds(mix).includes(c.id);
+    el.classList.toggle('off', !v.on); el.classList.toggle('live', live);
+    el.querySelector('.pw').setAttribute('aria-pressed', v.on); el.querySelector('.pw').lastChild.textContent = v.on ? '開' : '關';
+    el.querySelector('[data-a="m"]').classList.toggle('on', v.m); el.querySelector('[data-a="s"]').classList.toggle('on', v.s);
+    u.fader.value = v.lv; el.querySelector('[data-v="lv"]').textContent = Math.round(v.lv * 100);
+    el.querySelector('[data-v="ch"]').textContent = chLabel(v.ch); el.querySelector('[data-v="pan"]').textContent = panLabel(v.pan);
+    u.drawCh(); u.drawPan();
+  };
+});
+const drawTone = knob($('k-tone'), () => mix.tone, v => { mix.tone = v; changed(); }, { def: 0.6, label: v => v < 0.35 ? '悶暖' : v > 0.8 ? '清亮' : '適中' });
+$('f-master').addEventListener('input', () => { mix.master = +$('f-master').value; changed(); });
+$('drift').addEventListener('change', () => { mix.drift = $('drift').checked; changed(); });
+$('all-off').addEventListener('click', () => { E.CHANNELS.forEach(c => { mix.ch[c.id].on = false; mix.ch[c.id].s = false; }); curPreset = null; changed(); });
+
+function paintAll() {
+  E.CHANNELS.forEach(c => UI[c.id].paint());
+  $('f-master').value = mix.master; $('master-v').textContent = '主音量 ' + Math.round(mix.master * 100);
+  $('tone-v').textContent = mix.tone < 0.35 ? '悶暖' : mix.tone > 0.8 ? '清亮' : '適中'; drawTone();
+  $('drift').checked = mix.drift;
+  document.querySelectorAll('.preset').forEach(p => p.classList.toggle('cur', p.dataset.p === curPreset));
+  $('now').innerHTML = (playing ? '▶ 正在播放：' : '目前混音：') + '<b>' + esc(E.describeMix(mix)) + '</b>';
+}
+function capMix() { return Object.assign({}, mix, { master: Math.min(mix.master, +SET.cap) }); }
+function changed(fromPreset) {
+  if (!fromPreset && curPreset) curPreset = curPreset + '*';
+  if (MX) MX.apply(capMix());
+  paintAll(); saveMix();
+}
+
+/* ---------- 情境 ---------- */
+$('presets').innerHTML = E.PRESETS.map(p => `<button type="button" class="preset" data-p="${p.id}">${p.name}<small>${p.desc}</small></button>`).join('');
+$('presets').addEventListener('click', e => {
+  const b = e.target.closest('.preset'); if (!b) return;
+  const p = E.PRESETS.find(x => x.id === b.dataset.p);
+  mix = E.cleanMix(JSON.parse(JSON.stringify(p.mix))); curPreset = p.id; changed(true);
+  if (!playing) start();
+});
+
+/* ---------- 播放 ---------- */
+function tick() {
+  if (!MX) return;
+  MX.schedule(AC.currentTime + (document.hidden ? 3 : 1.2));
+}
+async function start() {
+  if (!E.activeIds(mix).length) { const p = E.PRESETS[0]; mix = E.cleanMix(JSON.parse(JSON.stringify(p.mix))); curPreset = p.id; toast('先幫你放「' + p.name + '」，可以再自己調'); }
+  if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); MX = new Mixer(AC, { analyse: true }); }
+  const tok = ++playTok;
+  await AC.resume();
+  if (tok !== playTok) return;   // 等待期間按了暫停：暫停優先
+  MX.fade.gain.cancelScheduledValues(AC.currentTime); MX.fade.gain.setValueAtTime(0, AC.currentTime); MX.fade.gain.linearRampToValueAtTime(pomoDim(), AC.currentTime + 1.2);
+  MX.apply(capMix(), 0.02);
+  playing = true; tick(); clearInterval(timer); timer = setInterval(tick, 250);
+  $('play').textContent = '⏸ 暫停'; paintAll(); setMedia();
+}
+async function stop() {
+  if (!AC) return;
+  playTok++; playing = false; clearInterval(timer);
+  MX.fadeTo(0, 0.4); setTimeout(() => { if (!playing) AC.suspend(); }, 450);
+  $('play').textContent = '▶ 播放'; paintAll();
+}
+$('play').addEventListener('click', () => (playing ? stop() : start()));
+document.addEventListener('keydown', e => { if (e.code === 'Space' && !/INPUT|SELECT|TEXTAREA|BUTTON/.test(document.activeElement.tagName) && !document.activeElement.classList.contains('knob')) { e.preventDefault(); playing ? stop() : start(); } });
+function setMedia() {
+  if (!('mediaSession' in navigator)) return;
+  try { navigator.mediaSession.metadata = new MediaMetadata({ title: E.describeMix(mix), artist: '環境音混音桌' }); navigator.mediaSession.setActionHandler('play', start); navigator.mediaSession.setActionHandler('pause', stop); } catch (e) {}
+}
+
+/* ---------- 電平表、VU、頻譜 ---------- */
+const vu = $('vu').getContext('2d'), sp = $('spec').getContext('2d');
+let vuLevel = 0, freq = null;
+function drawVU(level) {
+  const W = 340, H = 160; vu.clearRect(0, 0, W, H);
+  vu.fillStyle = '#efe5c9'; vu.fillRect(0, 0, W, H);
+  const cx = W / 2, cy = H + 30, R = 150;
+  vu.lineWidth = 2;
+  for (let i = 0; i <= 10; i++) {
+    const a = -Math.PI / 2 - 0.85 + i * 0.17, red = i >= 8;
+    vu.strokeStyle = red ? '#c8321f' : '#3a3428';
+    vu.beginPath(); vu.moveTo(cx + Math.cos(a) * (R - 14), cy + Math.sin(a) * (R - 14)); vu.lineTo(cx + Math.cos(a) * (R - (i % 2 ? 4 : 0)), cy + Math.sin(a) * (R - (i % 2 ? 4 : 0))); vu.stroke();
+  }
+  vu.fillStyle = '#3a3428'; vu.font = 'bold 20px IBM Plex Mono, monospace'; vu.fillText('VU', cx - 14, 120);
+  const a = -Math.PI / 2 - 0.85 + Math.min(1.08, level) * 1.7;
+  vu.strokeStyle = '#1b1a18'; vu.lineWidth = 3; vu.beginPath(); vu.moveTo(cx, cy); vu.lineTo(cx + Math.cos(a) * (R + 4), cy + Math.sin(a) * (R + 4)); vu.stroke();
+}
+const dbPct = rms => rms > 0 ? Math.max(0, Math.min(100, (20 * Math.log10(rms) + 54) / 48 * 100)) : 0;   // -54～-6 dBFS 對應 0～100%
+function frame() {
+  if (MX && playing) {
+    E.CHANNELS.forEach(c => { const k = MX.ch[c.id]; UI[c.id].meter.style.height = k && k.an ? dbPct(MX.level(k.an)) + '%' : '0%'; });
+    const lv = MX.level(MX.an);
+    vuLevel += (Math.min(1.1, lv * 3.2) - vuLevel) * 0.18;
+    $('m-master').style.height = dbPct(lv) + '%';
+    if (!freq) freq = new Uint8Array(MX.an.frequencyBinCount);
+    MX.an.getByteFrequencyData(freq);
+    const W = 1100, H = 54, n = 96; sp.clearRect(0, 0, W, H);
+    for (let i = 0; i < n; i++) {
+      const lo = Math.floor(Math.pow(freq.length, i / n)), hi = Math.max(lo + 1, Math.floor(Math.pow(freq.length, (i + 1) / n)));
+      let m = 0; for (let j = lo; j < hi; j++) m = Math.max(m, freq[j]);
+      const h = (m / 255) * H; sp.fillStyle = `hsl(${38 - i * 0.25}, 95%, ${45 + m / 12}%)`; sp.fillRect(i * (W / n) + 1, H - h, W / n - 2, h);
+    }
+  } else { vuLevel *= 0.9; E.CHANNELS.forEach(c => { UI[c.id].meter.style.height = '0%'; }); $('m-master').style.height = '0%'; }
+  drawVU(vuLevel);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- 睡眠定時 ---------- */
+let sleepEnd = 0, sleepFading = false;
+$('sleep').addEventListener('change', () => {
+  const m = +$('sleep').value; sleepEnd = m ? Date.now() + m * 60000 : 0; sleepFading = false;
+  if (MX && playing) MX.fadeTo(pomoDim(), 0.5);
+  if (m && !playing) start();
+  toast(m ? `${m} 分鐘後慢慢淡出並停止` : '已關閉睡眠定時');
+});
+/* ---------- 番茄鐘 ---------- */
+let pomoStart = 0, pomoPhase = null;
+function pomoDim() { return pomoStart && SET.restdim && pomoPhase && pomoPhase !== 'work' ? 0.35 : 1; }
+$('pomo').addEventListener('click', () => {
+  if (pomoStart) { pomoStart = 0; pomoPhase = null; $('pomo').classList.remove('on'); $('pomo-lcd').textContent = '--:--'; if (MX && playing) MX.fadeTo(1, 1); toast('番茄鐘已停止'); return; }
+  pomoStart = Date.now(); pomoPhase = 'work'; $('pomo').classList.add('on'); if (!playing) start();
+  toast(`開始專注 ${SET.work} 分鐘`);
+});
+setInterval(() => {
+  if (sleepEnd) {
+    const left = (sleepEnd - Date.now()) / 1000;
+    $('sleep-lcd').textContent = E.fmtTime(left);
+    if (left <= +SET.fade && !sleepFading && MX && playing) { sleepFading = true; MX.fadeTo(0, Math.max(1, left)); }
+    if (left <= 0) { sleepEnd = 0; $('sleep').value = '0'; $('sleep-lcd').textContent = '--:--'; stop(); toast('睡眠定時到了，晚安'); }
+  } else $('sleep-lcd').textContent = '--:--';
+  if (pomoStart) {
+    const p = E.pomodoro((Date.now() - pomoStart) / 1000, +SET.work, +SET.rest, +SET.long);
+    $('pomo-lcd').textContent = `${p.phase === 'work' ? '專注' : p.phase === 'long' ? '長休' : '休息'} ${E.fmtTime(p.left)}`;
+    if (p.phase !== pomoPhase) {
+      pomoPhase = p.phase;
+      if (MX) { if (AC.state !== 'running') AC.resume(); MX.chime(p.phase === 'work' ? 2 : 1); if (playing && !sleepFading) MX.fadeTo(pomoDim(), 3); }
+      toast(p.phase === 'work' ? `第 ${p.round} 輪：開始專注` : p.phase === 'long' ? '辛苦了，長休息一下' : '休息一下，起來走走');
+    }
+  }
+}, 500);
+
+/* ---------- 我的混音、分享 ---------- */
+const MINE = 'asm-mine';
+const loadMine = () => { try { const a = JSON.parse(lsGet(MINE, '[]')); return Array.isArray(a) ? a : []; } catch (e) { return []; } };
+function renderMine() {
+  const a = loadMine();
+  $('mine').innerHTML = a.length ? a.map(x => `<div class="mi" data-id="${x.id}"><b>${esc(x.name)}</b><div class="d">${esc(E.describeMix(E.cleanMix(x.mix)))}</div>
+    <div class="row" style="margin-top:4px"><button type="button" data-a="load">▶ 載入</button><button type="button" data-a="del">刪除</button></div></div>`).join('') : '<div class="note">還沒有收藏。調好喜歡的混音後取個名字按「儲存」。</div>';
+}
+$('mix-save').addEventListener('click', () => {
+  if (!E.activeIds(mix).length) return toast('先打開幾軌再儲存');
+  const name = $('mix-name').value.trim() || E.describeMix(mix).slice(0, 20);
+  const a = loadMine(); a.unshift({ id: Date.now().toString(36), name, mix: E.compactMix(mix) });
+  lsSet(MINE, JSON.stringify(a.slice(0, 40))); $('mix-name').value = ''; renderMine(); toast('已儲存');
+});
+$('mine').addEventListener('click', e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const id = b.closest('.mi').dataset.id, a = loadMine(), x = a.find(y => y.id === id); if (!x) return;
+  if (b.dataset.a === 'load') { mix = E.cleanMix(x.mix); curPreset = null; changed(true); if (!playing) start(); }
+  if (b.dataset.a === 'del') {
+    if (b.dataset.c !== '1') { b.dataset.c = '1'; b.textContent = '確定？'; setTimeout(() => { b.dataset.c = ''; b.textContent = '刪除'; }, 2500); return; }
+    lsSet(MINE, JSON.stringify(a.filter(y => y.id !== id))); renderMine();
+  }
+});
+async function copyText(t, ok) {
+  try { await navigator.clipboard.writeText(t); toast(ok); }
+  catch (e) { const ta = document.createElement('textarea'); ta.value = t; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); toast(ok); } catch (x) { toast('無法複製'); } ta.remove(); }
+}
+$('share').addEventListener('click', () => {
+  if (!E.activeIds(mix).length) return toast('先打開幾軌再分享');
+  copyText(location.href.split('#')[0] + '#m=' + E.encodeShare(E.compactMix(mix)), '已複製分享連結');
+});
+
+/* ---------- 匯出 ---------- */
+$('export').addEventListener('click', async () => {
+  if (!E.activeIds(mix).length) return toast('先打開幾軌再匯出');
+  const len = +$('exp-len').value, sr = +SET.sr, xf = +SET.xf, btn = $('export');
+  btn.disabled = true;
+  // 匯出時先暫停即時播放：同時播放會讓離線合成慢 4 倍左右
+  const wasPlaying = playing; if (wasPlaying) { await stop(); await new Promise(r => setTimeout(r, 500)); }
+  $('exp-msg').textContent = '⏳ 合成中' + (wasPlaying ? '（先暫停播放，完成後會自動接著播）' : '') + '，請稍候…';
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    const t0 = performance.now();
+    const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    const ctx = new OAC(2, Math.ceil(sr * (len + xf)), sr);
+    const m = new Mixer(ctx, { seed: (Math.random() * 1e9) | 0 });
+    m.apply(Object.assign({}, mix, { master: Math.max(0.5, mix.master) }), 0);
+    m.schedule(len + xf);
+    const buf = await ctx.startRendering();
+    let ch = E.makeLoop([buf.getChannelData(0), buf.getChannelData(1)], sr, xf);
+    if (SET.norm) E.normalize(ch);
+    const wav = E.encodeWAV(ch, sr);
+    const url = URL.createObjectURL(new Blob([wav], { type: 'audio/wav' }));
+    const a = document.createElement('a'); a.href = url; a.download = `環境音_${E.activeIds(mix).map(id => E.CH[id].name).join('+')}_${len}秒_循環.wav`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    $('exp-msg').textContent = `✅ 完成（${(wav.length / 1048576).toFixed(1)} MB，合成 ${((performance.now() - t0) / 1000).toFixed(1)} 秒）`;
+  } catch (e) { $('exp-msg').textContent = '匯出失敗：' + e.message; }
+  btn.disabled = false;
+  if (wasPlaying) start();
+});
+
+/* ---------- 常用設定 ---------- */
+const OPEN_KEY = 'asm-set-open';
+function setSummaries() {
+  $('sv-play').textContent = `${SET.restore ? '記住上次' : '每次重來'}・上限 ${Math.round(SET.cap * 100)}%`;
+  $('sv-pomo').textContent = `${SET.work}／${SET.rest}／${SET.long} 分`;
+  $('sv-export').textContent = `${SET.sr / 1000} kHz・淡化 ${SET.xf} 秒`;
+  $('sv-data').textContent = `收藏 ${loadMine().length} 組`;
+}
+function openSettings() {
+  $('set-restore').checked = !!SET.restore; $('set-cap').value = String(SET.cap); $('set-fade').value = String(SET.fade);
+  $('set-work').value = String(SET.work); $('set-rest').value = String(SET.rest); $('set-long').value = String(SET.long); $('set-restdim').checked = !!SET.restdim;
+  $('set-sr').value = String(SET.sr); $('set-xf').value = String(SET.xf); $('set-norm').checked = !!SET.norm;
+  let open = []; try { open = JSON.parse(lsGet(OPEN_KEY, '[]')); } catch (e) {}
+  document.querySelectorAll('details.set-sec').forEach(d => { d.open = open.includes(d.dataset.sec); });
+  setSummaries(); $('settings-modal').classList.remove('hidden');
+}
+function rememberOpen() { lsSet(OPEN_KEY, JSON.stringify([...document.querySelectorAll('details.set-sec')].filter(d => d.open).map(d => d.dataset.sec))); }
+document.querySelectorAll('details.set-sec').forEach(d => d.addEventListener('toggle', rememberOpen));
+$('set-expand').addEventListener('click', () => { document.querySelectorAll('details.set-sec').forEach(d => { d.open = true; }); rememberOpen(); });
+$('set-collapse').addEventListener('click', () => { document.querySelectorAll('details.set-sec').forEach(d => { d.open = false; }); rememberOpen(); });
+$('settings-btn').addEventListener('click', openSettings);
+$('settings-ok').addEventListener('click', () => {
+  SET.restore = $('set-restore').checked; SET.cap = +$('set-cap').value; SET.fade = +$('set-fade').value;
+  SET.work = +$('set-work').value; SET.rest = +$('set-rest').value; SET.long = +$('set-long').value; SET.restdim = $('set-restdim').checked;
+  SET.sr = +$('set-sr').value; SET.xf = +$('set-xf').value; SET.norm = $('set-norm').checked;
+  saveSet(); if (MX) MX.apply(capMix()); $('settings-modal').classList.add('hidden');
+});
+$('clear-mine').addEventListener('click', () => {
+  const b = $('clear-mine');
+  if (b.dataset.c !== '1') { b.dataset.c = '1'; b.textContent = '再按一次確認'; setTimeout(() => { b.dataset.c = ''; b.textContent = '清除「我的混音」全部紀錄'; }, 2500); return; }
+  b.dataset.c = ''; lsDel(MINE); renderMine(); setSummaries(); b.textContent = '✅ 已清除'; setTimeout(() => { b.textContent = '清除「我的混音」全部紀錄'; }, 1500);
+});
+document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if (e.target === m && m.id !== 'warn-modal') m.classList.add('hidden'); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') $('settings-modal').classList.add('hidden'); });
+const showWarn = () => $('warn-modal').classList.remove('hidden');
+if (!lsGet('asm-warned', '')) showWarn();
+$('warn-ok').addEventListener('click', () => { lsSet('asm-warned', '1'); $('warn-modal').classList.add('hidden'); });
+$('warn-btn').addEventListener('click', showWarn);
+$('about-warn').addEventListener('click', () => { $('settings-modal').classList.add('hidden'); showWarn(); });
+$('about-install').addEventListener('click', () => $('installBtn').click());
+
+/* ---------- 啟動 ---------- */
+const hm = location.hash.match(/#m=([A-Za-z0-9_-]+)/);
+if (hm) { const d = E.decodeShare(hm[1]); if (d && E.validMix(d)) { mix = E.cleanMix(d); toast('已載入分享的混音，按 ▶ 播放'); } else toast('分享連結無法讀取'); }
+renderMine(); paintAll(); requestAnimationFrame(frame);
+window.__asm = { E, get mix() { return mix; }, get MX() { return MX; }, get AC() { return AC; }, Mixer, start, stop };
+</script>
+
+<script>
+/* 頂部跑馬燈 — 共用公告（必備，不提供關閉） */
+(function () {
+  'use strict';
+  var MARQUEE_CHECK_URL = "https://script.google.com/macros/s/AKfycbwKX0DNNbY8y4nf90BFTHtxgfqJcHHcZasRrgycl4QAe52_hkjMWSkYk4xOsqU-JPCROw/exec";
+  var STORAGE_KEY = 'asmMarquee';
+  var REFRESH_MS = 20 * 60 * 1000;
+  var bar = document.getElementById('marqueeBar');
+  var track = document.getElementById('marqueeTrack');
+  var lastKey = null;
+  function loadCache() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { return []; } }
+  function saveCache(items) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); } catch (e) {} }
+  function appendParsedText(container, text) {
+    var re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    var lastIndex = 0, m;
+    while ((m = re.exec(text))) {
+      if (m.index > lastIndex) container.appendChild(document.createTextNode(text.slice(lastIndex, m.index)));
+      var a = document.createElement('a');
+      a.href = m[2]; a.textContent = m[1]; a.target = '_blank'; a.rel = 'noopener noreferrer';
+      a.style.color = 'inherit'; a.style.textDecoration = 'underline';
+      container.appendChild(a);
+      lastIndex = re.lastIndex;
+    }
+    if (lastIndex < text.length) container.appendChild(document.createTextNode(text.slice(lastIndex)));
+  }
+  function buildTrackContent(items) {
+    var frag = document.createDocumentFragment();
+    function appendPass() {
+      items.forEach(function (item, idx) {
+        if (idx > 0) frag.appendChild(document.createTextNode('　★　'));
+        appendParsedText(frag, item);
+      });
+    }
+    appendPass(); frag.appendChild(document.createTextNode('　★　')); appendPass();
+    return frag;
+  }
+  function render(items) {
+    if (!items || !items.length) return;
+    var key = JSON.stringify(items);
+    if (key === lastKey) return;
+    lastKey = key;
+    track.innerHTML = '';
+    track.appendChild(buildTrackContent(items));
+    bar.classList.add('on');
+    document.body.classList.add('has-marquee');
+    var width = track.scrollWidth / 2;
+    track.style.animationDuration = Math.max(width / 80, 10) + 's';
+  }
+  function fetchMarquee() {
+    fetch(MARQUEE_CHECK_URL, { method: 'POST', body: JSON.stringify({ serial: '' }) })
+      .then(function (r) { return r.json(); })
+      .then(function (data) { if (data && Array.isArray(data.marquee) && data.marquee.length) { saveCache(data.marquee); render(data.marquee); } })
+      .catch(function () {});
+  }
+  render(loadCache());
+  fetchMarquee();
+  setInterval(fetchMarquee, REFRESH_MS);
+})();
+</script>
+<script>
+/* PWA 加入主畫面 */
+(function () {
+  'use strict';
+  var deferredPrompt = null;
+  var btn = document.getElementById('installBtn');
+  var ua = navigator.userAgent || '';
+  var isIOSDevice = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var isMacDesktop = /Macintosh/.test(ua) && !isIOSDevice;
+  var isSafariEngine = /^((?!chrome|crios|fxios|edgios|android).)*safari/i.test(ua);
+  var isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+  function fallbackMessage() {
+    if (isIOSDevice) return '請點畫面上的「分享」圖示，選「加入主畫面」';
+    if (isMacDesktop && isSafariEngine) return '請用選單列「檔案」→「加入 Dock」（Safari 17 以上）';
+    return '瀏覽器不支援，或已安裝過';
+  }
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredPrompt = e; });
+  window.addEventListener('appinstalled', function () { deferredPrompt = null; });
+  if (btn) {
+    if (isStandalone) { btn.style.display = 'none'; }
+    else {
+      btn.addEventListener('click', function () {
+        if (!deferredPrompt) { window.alert(fallbackMessage()); return; }
+        try { deferredPrompt.prompt(); deferredPrompt.userChoice.then(function () { deferredPrompt = null; }); }
+        catch (err) { window.alert(fallbackMessage()); }
+      });
+    }
+  }
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('service-worker.js').catch(function () {}); });
+  }
+})();
+</script>
+</body>
+</html>

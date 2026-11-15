@@ -1,0 +1,16 @@
+{
+  "name": "環境音混音桌",
+  "short_name": "環境音混音",
+  "description": "13 軌程式合成的環境音，混出讀書、助眠、工作背景音，可定時、番茄鐘、匯出無縫循環 WAV",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#161513",
+  "theme_color": "#1b1a18",
+  "lang": "zh-TW",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
